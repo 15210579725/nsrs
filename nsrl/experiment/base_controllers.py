@@ -809,9 +809,9 @@ class CheckpointController(Controller):
         if ((self._updates - 1) % self._keep_every != 0) and self._prev_filename is not None:
             os.remove(self._prev_filename)
 
-        if self._save_dataset:
-            dataset_fname = os.path.join(self._experiment_dir, "dataset")
-            agent._dataset.save(dataset_fname, save_env=self._save_env)
+        # if self._save_dataset:
+        #     dataset_fname = os.path.join(self._experiment_dir, "dataset")
+        #     agent._dataset.save(dataset_fname, save_env=self._save_env)
         self._prev_filename = f"{model_fname}.epoch={self._count}"
         self._updates += 1
 

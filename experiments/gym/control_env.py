@@ -80,7 +80,7 @@ class MyEnv(Environment):
         """ Simulate one time step in the environment.
         """
         reward = 0
-        self.state = np.zeros((self._timesteps_per_action, self._frame_size[0], self._frame_size[1]), dtype=np.float)
+        self.state = np.zeros((self._timesteps_per_action, self._frame_size[0], self._frame_size[1]), dtype=float)
         for t in range(self._timesteps_per_action):
             if self._mapping is not None:
                 action = self._mapping[action]

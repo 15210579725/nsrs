@@ -43,7 +43,7 @@ class QArgmaxPolicy(EpsilonGreedyPolicy):
         return np.argmax(q_vals, axis=-1), np.max(q_vals, axis=-1)
 
 
-class MCPolicy(EpsilonGreedyPolicy):
+class MCPolicy(EpsilonGreedyPolicy):    #蒙特卡罗算法
     def __init__(self, learning_algo, n_actions, random_state, depth=1, epsilon_start=0):
         super(MCPolicy, self).__init__(learning_algo, n_actions, random_state, epsilon_start)
         self._depth = depth

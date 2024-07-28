@@ -11,6 +11,7 @@ except ModuleNotFoundError:
     import pickle
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Using device: ", device)
 # device = torch.device("cpu")
 
 def calculate_large_batch(model, data, smaller_bsize=32):

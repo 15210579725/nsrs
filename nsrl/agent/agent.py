@@ -421,11 +421,11 @@ class NeuralAgent(object):
                     action = preset_actions[j % len(preset_actions)]
 
 
-                V, action, reward, add_steps = self._step(action=action)
+                V, action, reward, add_steps = self._step(action=action) ###从策略中采样走一步，V是预期能拿到的回报
                 maxSteps -= add_steps
 
                 self._Vs_on_last_episode.append(V)
-                if self._mode != -1:
+                if self._mode != -1:    #-1 是 training mode
                     self._total_mode_reward += reward
 
                 is_terminal = self._environment.inTerminalState()   # If the transition ends up in a terminal state, mark transition as terminal

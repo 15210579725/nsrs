@@ -24,6 +24,7 @@ class Plotter(object):
                                  offline=offline,
                                  server='http://' + host, port=port)
         self.plots = {}
+        self.experiment_dir = experiment_dir
 
     def plot_dict(self, x, value_dict):
         for k, v in value_dict.items():

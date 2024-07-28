@@ -10,6 +10,8 @@ import torch
 import copy
 import numpy as np
 from joblib import hash, dump
+import faulthandler
+faulthandler.enable()
 
 from nsrl.default_parser import process_gym_args, stringify_params
 from nsrl.agent import SEAgent
@@ -65,7 +67,7 @@ class Defaults:
     EPSILON_DECAY = 100
     UPDATE_FREQUENCY = 3
     REPLAY_MEMORY_SIZE = 10000
-    BATCH_SIZE = 64
+    BATCH_SIZE = 128 #origin 64
     FREEZE_INTERVAL = 1000
     DETERMINISTIC = True
 
@@ -100,7 +102,7 @@ class Defaults:
 
     XTRA = ''
     # ----------------------
-    # Representation NN parameters:
+    # Representation NN parameters:x
     # ----------------------
 
     # if LEARN_REPRESENTATION:
@@ -117,8 +119,8 @@ class Defaults:
     DEPTH = 5
     HIGHER_DIM_OBS = True
 
-    ITERS_PER_UPDATE = 50000
-    # ITERS_PER_UPDATE = 1
+    # ITERS_PER_UPDATE = 5000    #origin 50000
+    ITERS_PER_UPDATE = 1
 
     # For plotting
     OFFLINE_PLOTTING = False
@@ -149,9 +151,10 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # --- Parse parameters ---
     parameters = process_gym_args(sys.argv[1:], Defaults)
-
-    parameters.env_name = f"{parameters.env} " + parameters.env_name
-
+    
+    parameters.env_name = parameters.env_name.replace(" ", "--")
+    parameters.env_name = f"{parameters.env}--" + parameters.env_name
+    print("env_name is:", parameters.env_name)
     max_steps = parameters.steps_per_epoch
 
     """
@@ -229,20 +232,23 @@ if __name__ == "__main__":
         start_count = parameters.start_count
 
     # --- Create experiment directory
+
     h = parameters.env_name + '_' + parameters.job_id
+    print("h is:", h)
 
     testing = job_id == str(0)
     # testing = True
     root_save_path = os.path.join(ROOT_DIR, "examples", "gym", "experiments")
     try:
-        os.mkdir(root_save_path)
+        os.makedirs(root_save_path)
     except Exception:
         pass
 
     experiment_dir = os.path.join(root_save_path, h)
+    print("Experiment directory: %s" % experiment_dir)
 
     try:
-        os.mkdir(experiment_dir)
+        os.makedirs(experiment_dir)
     except Exception:
         raise Exception("Experiment already exists")
 
@@ -303,8 +309,8 @@ if __name__ == "__main__":
         test_policy = ep.QArgmaxPolicy(learning_algo, env.nActions(), rng, parameters.epsilon_start)
         train_policy = ep.QArgmaxPolicy(learning_algo, env.nActions(), rng, parameters.epsilon_start)
     elif parameters.action_type == 'd_step_q_planning':
-        test_policy = ep.MCPolicy(learning_algo, parameters.reward_type, env.nActions(), rng, depth=parameters.depth, epsilon_start=parameters.epsilon_start)
-        train_policy = ep.MCPolicy(learning_algo, parameters.reward_type, env.nActions(), rng, depth=parameters.depth, epsilon_start=parameters.epsilon_start)
+        test_policy = ep.MCPolicy(learning_algo, env.nActions(), rng, depth=parameters.depth, epsilon_start=parameters.epsilon_start)
+        train_policy = ep.MCPolicy(learning_algo, env.nActions(), rng, depth=parameters.depth, epsilon_start=parameters.epsilon_start)
     elif parameters.action_type == 'bootstrap_q':
         test_policy = ep.BootstrapDQNPolicy(learning_algo, env.nActions(), rng, parameters.epsilon_start)
         train_policy = ep.BootstrapDQNPolicy(learning_algo, env.nActions(), rng, parameters.epsilon_start)
@@ -389,7 +395,8 @@ if __name__ == "__main__":
         loss_plotting_sum_over = 10
         periodicity = 10
 
-    agent.attach(eh.LossPlottingController(
+    # print(plotter.)
+    agent.attach(eh.LossPlottingController( ###
         plotter,
         evaluate_on='train_step',
         periodicity=periodicity,
@@ -467,3 +474,4 @@ if __name__ == "__main__":
         show_avg_Bellman_residual=True))
 
     agent.run(parameters.epochs, parameters.steps_per_epoch, break_on_done=True)
+
