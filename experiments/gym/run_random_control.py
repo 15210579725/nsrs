@@ -3,12 +3,13 @@ import errno
 import numpy as np
 from datetime import datetime
 from random import randrange
-from .control_env import MyEnv as Control_env
+# from .control_env import MyEnv as Control_env
+from experiments.gym.control_env import MyEnv as Control_env
 from definitions import ROOT_DIR
 
 
 if __name__ == "__main__":
-    episodes = 2
+    episodes = 3
     steps_per_episode = 10000
     rng = np.random.RandomState()
     env = 'acrobot'

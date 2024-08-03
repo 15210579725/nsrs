@@ -791,6 +791,17 @@ class NSRS(LearningAlgo):
         scores = self._score_func(new_states.cpu().detach().numpy(),
                                   all_prev_states.cpu().detach().numpy(),
                                   k=self._k, knn=self._knn)
+        #print the shape of new_states all_prev_states and scores ,and themself
+        print("new_states shape: ", new_states.shape)
+        print("all_prev_states shape: ", all_prev_states.shape)
+        print("scores shape: ", scores.shape)
+        print("new_states: ", new_states)
+        print("all_prev_states: ", all_prev_states)
+        print("scores: ", scores)
+        print("**********************************************")
+        
+        #us
+        scores = 
         if R is not None:
             scores += R(state_actions).squeeze(-1).cpu().detach().numpy()
 

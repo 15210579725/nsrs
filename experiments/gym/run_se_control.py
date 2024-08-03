@@ -67,7 +67,7 @@ class Defaults:
     EPSILON_DECAY = 100
     UPDATE_FREQUENCY = 3
     REPLAY_MEMORY_SIZE = 10000
-    BATCH_SIZE = 128 #origin 64
+    BATCH_SIZE = 64 #origin 64
     FREEZE_INTERVAL = 1000
     DETERMINISTIC = True
 
@@ -120,7 +120,7 @@ class Defaults:
     HIGHER_DIM_OBS = True
 
     # ITERS_PER_UPDATE = 5000    #origin 50000
-    ITERS_PER_UPDATE = 1
+    ITERS_PER_UPDATE = 100
 
     # For plotting
     OFFLINE_PLOTTING = False
@@ -144,7 +144,7 @@ class Defaults:
 
     # Observations per state. DIFFERENT from timesteps per action.
     OBS_PER_STATE = 4
-    MONITOR = False
+    MONITOR = True #origin False
     TRAIN_CSC_DIST = False
 
 if __name__ == "__main__":
