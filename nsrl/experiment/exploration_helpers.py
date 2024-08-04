@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import json
 from nsrl.experiment.base_controllers import Controller
-from nsrl.helper.exploration import calculate_scores
+from nsrl.helper.exploration import calculate_scores, calculate_scores_kde
 from nsrl.helper.knn import ranked_avg_knn_scores, batch_count_scaled_knn
 from nsrl.helper.pytorch import device, calculate_large_batch
 
@@ -240,12 +240,12 @@ class RewardController(Controller):
     def _update(self, agent):
         raise NotImplementedError
 
-
+import matplotlib.pyplot as plt
 class NoveltyRewardController(RewardController):
     def __init__(self, evaluate_on='train_loop', periodicity=1,
                  metric_func=calculate_scores,
                  score_func=ranked_avg_knn_scores, k=10, knn=batch_count_scaled_knn,
-                 secondary=False):
+                 secondary=False, plotter=None):
         super(NoveltyRewardController, self).__init__(evaluate_on=evaluate_on, periodicity=periodicity)
 
         self._metric_func = metric_func
@@ -253,17 +253,37 @@ class NoveltyRewardController(RewardController):
         self._score_func = score_func
         self._knn = knn
         self._secondary = secondary
+        self._plotter = plotter
+        self._count = 0
 
     def _update(self, agent):
         # Now we have to calculate intrinsic rewards
         for m in agent._learning_algo.all_models: m.eval()
 
         all_prev_state = agent._dataset.observationsMatchingBatchDim()[0]
+
         intr_rewards = self._metric_func(all_prev_state,
                                          all_prev_state,
                                          agent._learning_algo.encoder,
                                          dist_score=self._score_func,
-                                         k=self._k, knn=self._knn)
+                                         k=self._k, knn=self._knn, plotter=self._plotter, _count = self._count)
+        print("Intrinsic rewards: ", max(intr_rewards), min(intr_rewards), np.mean(intr_rewards))
+        self._plotter.plot("intrinsic_mean_rewards", np.array([self._count]), [np.mean(intr_rewards)], title_name="Intrinsic Rewards")
+        # self._plotter.plot("extrinsic_rewards", np.array([self._count]), np.array([reward]), title_name="Extrinsic Rewards")
+        self._count += 1
+        # def plot(self, var_name, x, y, title_name="Default Plot",
+        #      ymin=None, ymax=None, xmin=None, xmax=None, markers=False,
+        #      linecolor=None, name="default"):
+        #print picture
+        
+        # plt.figure()
+        # # 使用imshow显示矩阵
+        # plt.imshow(all_prev_state[-1][0], cmap='gray')  # 选择灰度色彩映射
+        # # 显示颜色条
+        # plt.colorbar()
+        # # 显示图片
+        # plt.show()
+            # input("press enter to continue")
         # UPDATE HTIS TO TAKE INTO ACCOUNT NON INTRINSIC REWARDS
 
         # reward clipping for preventing divergence
@@ -285,9 +305,11 @@ class NoveltyRewardController(RewardController):
                                                   all_prev_state,
                                                   agent._learning_algo.encoder,
                                                   dist_score=self._score_func,
-                                                  k=self._k, knn=self._knn)
+                                                  k=self._k, knn=self._knn, plotter = self._plotter, _count = self._count)
         # latest_obs_intr_reward = np.clip(latest_obs_intr_reward, -1, 1)
         agent._dataset.updateRewards(latest_obs_intr_reward, agent._dataset.n_elems - 1, secondary=self._secondary)
+        print("newest Intrinsic rewards: ", latest_obs_intr_reward)
+        self._plotter.plot("newest intrinsic_mean_rewards", np.array([self._count]), [latest_obs_intr_reward], title_name="newest Intrinsic Rewards")
 
 class HashStateCounterController(RewardController):
     def __init__(self, plotter, evaluate_on='action', periodicity=1, granularity=32,

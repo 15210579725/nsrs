@@ -15,7 +15,7 @@ from joblib import hash, dump
 from nsrl.default_parser import process_ale_args, stringify_params
 from nsrl.agent import SEAgent
 from nsrl.learning_algos.NSRS_pytorch import NSRS
-from .ALE_env_gym import MyEnv as ALE_env
+from ALE_env_gym import MyEnv as ALE_env
 import nsrl.experiment.base_controllers as bc
 import nsrl.experiment.exploration_helpers as eh
 from nsrl.helper.plot import Plotter

@@ -22,6 +22,7 @@ import nsrl.experiment.exploration_helpers as eh
 from nsrl.helper.plot import Plotter
 from definitions import ROOT_DIR
 from nsrl.helper.knn import ranked_avg_knn_scores, avg_knn_scores, batch_knn, batch_count_scaled_knn
+from nsrl.helper.exploration import calculate_scores, calculate_scores_kde
 
 from nsrl.policies import EpsilonGreedyPolicy
 import nsrl.policies.exploration_policies as ep
@@ -143,7 +144,7 @@ class Defaults:
     REWARD_LEARNING = "combined"
 
     # Observations per state. DIFFERENT from timesteps per action.
-    OBS_PER_STATE = 4
+    OBS_PER_STATE = 4   #see 4 consecutive states as one state
     MONITOR = True #origin False
     TRAIN_CSC_DIST = False
 
@@ -160,9 +161,9 @@ if __name__ == "__main__":
     """
     We have three options for observations, reflected here and in input_dims for env:
     1. 6 dim full observation from environment
-    2. high dim + timesteps_per_action > 1: 
+    2. high dim + timesteps_per_action > 1:     #一个动作执行t次
         each action is performed timesteps_per_action number of times, and all those actions count as a single state
-    3. high dim + obs_per_state > 1:
+    3. high dim + obs_per_state > 1:    #能观察到历史状态obs个
         each action is performed once, and we take obs_per_state - 1 states before current state and use the combination
         of the obs_per_state number of observations as state
     """
@@ -396,12 +397,14 @@ if __name__ == "__main__":
         periodicity = 10
 
     # print(plotter.)
-    agent.attach(eh.LossPlottingController( ###
+    agent.attach(eh.LossPlottingController( 
         plotter,
         evaluate_on='train_step',
         periodicity=periodicity,
         sum_over=loss_plotting_sum_over
     ))
+
+    #important reward type
     if parameters.reward_type == 'novelty_reward':
         agent.attach(eh.NoveltyRewardController(
             evaluate_on='train_loop',
@@ -409,7 +412,9 @@ if __name__ == "__main__":
             k=parameters.k,
             score_func=score_func,
             knn=knn,
-            secondary=True
+            secondary=True,
+            plotter=plotter,
+            # metric_func=calculate_scores_kde
         ))
     elif parameters.reward_type == 'hash_count_reward':
         agent.attach(eh.HashCountRewardController(
@@ -436,7 +441,7 @@ if __name__ == "__main__":
         abstr_plotting_evaluate = 'train_step'
 
     if internal_dim is not None and internal_dim < 4:
-        agent.attach(eh.AbstractRepPlottingController(
+        agent.attach(eh.AbstractRepPlottingController(  #abstract plotting
             plotter,
             evaluate_on=abstr_plotting_evaluate,
             start_count=start_count,
@@ -467,7 +472,7 @@ if __name__ == "__main__":
     # During training epochs, we want to train the agent after every [parameters.update_frequency] action it takes.
     # Plus, we also want to display after each training episode (!= than after every training) the average bellman
     # residual and the average of the V values obtained during the last episode, hence the two last arguments.
-    agent.attach(bc.TrainerController(
+    agent.attach(bc.TrainerController(  #important
         evaluate_on='action',
         periodicity=parameters.update_frequency,
         show_episode_avg_V_value=True,

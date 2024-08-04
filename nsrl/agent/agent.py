@@ -95,7 +95,8 @@ class NeuralAgent(object):
         # self._valid_dataset = DataSet(environment, max_size=replay_memory_size,
         #                               random_state=random_state, use_priority=self._exp_priority,
         #                               only_full_history=self._only_full_history)
-        self._mode = -1
+        self._mode = -1 
+        # -1 for training
         self._mode_epochs_length = 0
         self._total_mode_reward = 0
         self._training_loss_averages = []
@@ -406,15 +407,18 @@ class NeuralAgent(object):
         reward=0
         j = 0
         # Set preset actions here
-        while maxSteps > 0:
-
+        while maxSteps > 0: #3000
+            # print("maxSteps:",maxSteps)
             maxSteps -= 1
             if(self.gathering_data==True or self._mode!=-1):
-                if j > 0 and self._bootstrap_q and j % self._sample_head_every == 0:
+                if j > 0 and self._bootstrap_q and j % self._sample_head_every == 0:    #sample head every = 20
                     self._train_policy.sample_head()
-                obs = self._environment.observe()
+                obs = self._environment.observe()   #? obs 32*32 ,repeat 0.9921875
+                # print("obs shape", obs.shape)()
+                # print("obs:",obs)
 
-                for i in range(len(obs)):
+
+                for i in range(len(obs)):   #更新4个连续state的obs
                     self._state[i][0:-1] = self._state[i][1:]
                     self._state[i][-1] = obs[i]
 

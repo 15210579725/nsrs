@@ -801,7 +801,7 @@ class NSRS(LearningAlgo):
         print("**********************************************")
         
         #us
-        scores = 
+        # scores = 
         if R is not None:
             scores += R(state_actions).squeeze(-1).cpu().detach().numpy()
 
