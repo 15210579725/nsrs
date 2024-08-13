@@ -14,6 +14,7 @@ from warnings import warn
 from nsrl.experiment import base_controllers as controllers
 from nsrl.policies import EpsilonGreedyPolicy
 from nsrl.helper.data import DataSet, SliceError, CircularBuffer
+import matplotlib.pyplot as plt
 
 class NeuralAgent(object):
     """The NeuralAgent class wraps a learning algorithm (such as a deep Q-network) for training and testing in a given environment.
@@ -407,6 +408,7 @@ class NeuralAgent(object):
         reward=0
         j = 0
         # Set preset actions here
+        plt.ion()
         while maxSteps > 0: #3000
             # print("maxSteps:",maxSteps)
             maxSteps -= 1
@@ -414,6 +416,14 @@ class NeuralAgent(object):
                 if j > 0 and self._bootstrap_q and j % self._sample_head_every == 0:    #sample head every = 20
                     self._train_policy.sample_head()
                 obs = self._environment.observe()   #? obs 32*32 ,repeat 0.9921875
+                
+                #only for maze
+                # img = self._environment.map_trajectory()
+                # plt.imshow(img)
+                # plt.draw()  # 绘制当前图像
+                # plt.pause(0.1)  # 暂停指定时间
+                # plt.clf()  # 清除当前图像
+
                 # print("obs shape", obs.shape)()
                 # print("obs:",obs)
 

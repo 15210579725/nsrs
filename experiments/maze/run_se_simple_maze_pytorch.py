@@ -67,7 +67,7 @@ class Defaults:
     EPSILON_DECAY = 100
     UPDATE_FREQUENCY = 1
     REPLAY_MEMORY_SIZE = 1000
-    BATCH_SIZE = 64
+    BATCH_SIZE = 8 #origin 64
     FREEZE_INTERVAL = 1000
     DETERMINISTIC = False
 
@@ -110,8 +110,8 @@ class Defaults:
     MAZE_WALLS = False
     HIGHER_DIM_OBS = False
 
+    # ITERS_PER_UPDATE = 30000  #origin 50000
     ITERS_PER_UPDATE = 30000
-    # ITERS_PER_UPDATE = 10
 
     # For plotting
     OFFLINE_PLOTTING = False
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     parameters.experiment_dir = os.path.join(root_save_path, h)
 
     try:
-        os.mkdir(parameters.experiment_dir)
+        os.makedirs(parameters.experiment_dir)
     except Exception:
 
         raise Exception("Experiment already exists")
@@ -273,8 +273,8 @@ if __name__ == "__main__":
         test_policy = ep.QArgmaxPolicy(learning_algo, env.nActions(), rng, parameters.epsilon_start)
         train_policy = ep.QArgmaxPolicy(learning_algo, env.nActions(), rng, parameters.epsilon_start)
     elif parameters.action_type == 'd_step_q_planning':
-        test_policy = ep.MCPolicy(learning_algo, parameters.reward_type, env.nActions(), rng, depth=parameters.depth, epsilon_start=parameters.epsilon_start)
-        train_policy = ep.MCPolicy(learning_algo, parameters.reward_type, env.nActions(), rng, depth=parameters.depth, epsilon_start=parameters.epsilon_start)
+        test_policy = ep.MCPolicy(learning_algo, env.nActions(), rng, depth=parameters.depth, epsilon_start=parameters.epsilon_start)
+        train_policy = ep.MCPolicy(learning_algo,  env.nActions(), rng, depth=parameters.depth, epsilon_start=parameters.epsilon_start)
     elif parameters.action_type == 'bootstrap_q':
         test_policy = ep.BootstrapDQNPolicy(learning_algo, env.nActions(), rng, parameters.epsilon_start)
         train_policy = ep.BootstrapDQNPolicy(learning_algo, env.nActions(), rng, parameters.epsilon_start)
@@ -312,6 +312,7 @@ if __name__ == "__main__":
 
     agent.attach(bc.CheckpointController(
         evaluate_on='action',
+        # evaluate_on='episode',
         periodicity=LOG_PERIODICITY,
         experiment_dir=parameters.experiment_dir,
         start_count=checkpoint_start_count,

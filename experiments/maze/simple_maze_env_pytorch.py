@@ -427,7 +427,7 @@ class MyEnv(Environment):
             return [(1,self._size_maze,self._size_maze)]
 
     def observationType(self, subject):
-        return np.float
+        return float
 
     def nActions(self):
         return 4
@@ -442,7 +442,8 @@ class MyEnv(Environment):
         return [obs]
 
     def map_trajectory(self, save_image=False, img_name='default'):
-        obs = self.get_higher_dim_obs([self._pos_agent], [self._pos_goal])
+        # obs = self.get_higher_dim_obs([self._pos_agent], [self._pos_goal])
+        obs = self.get_higher_dim_obs([self._pos_agent])
 
         # Add points for all places
         for x, y in self._trajectory:
@@ -519,9 +520,9 @@ class MyEnv(Environment):
         for i in indices_agent:
             obs[i[0]*6:(i[0]+1)*6:,i[1]*6:(i[1]+1)*6]=agent_obs
             
-        plt.imshow(obs, cmap='gray_r')
+        # plt.imshow(obs, cmap='gray_r')
 
-        plt.show()
+        # plt.show()
         return obs
 
 
@@ -542,6 +543,16 @@ class MyEnv(Environment):
 
 
 if __name__ == "__main__":
-    env = MyEnv(0, higher_dim_obs=True)
-    env.map_trajectory()
+    env = MyEnv(0, higher_dim_obs=True, size_maze = 21, maze_walls = False, intern_dim = 2)
+    # env = MyEnv(0, higher_dim_obs=False)
+    ######
+    # self._size_maze=kwargs.get('size_maze', 8)
+    # self._higher_dim_obs=kwargs.get("higher_dim_obs", False)
+    # self._maze_walls = kwargs.get('maze_walls', True)
+    # self.create_map()
+    # self.intern_dim = kwargs.get('intern_dim', 2)
+    ######
+    img = env.map_trajectory()
+    plt.imshow(img)
+    plt.show()
 

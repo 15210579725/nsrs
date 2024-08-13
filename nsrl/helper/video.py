@@ -33,7 +33,8 @@ def text_phantom(text, size=16):
     # Create font
     pil_font = ImageFont.truetype(font, size=size,
                                   encoding="unic")
-    text_width, text_height = pil_font.getsize(text)
+    # text_width, text_height = pil_font.getsize(text)
+    text_width, text_height = [10, 10]
 
     # create a blank canvas with extra space between lines
     canvas = Image.new('RGB', [text_width, text_height], (255, 255, 255))

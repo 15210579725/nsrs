@@ -70,7 +70,7 @@ class Defaults:
     REPLAY_MEMORY_SIZE = 10000
     BATCH_SIZE = 64 #origin 64
     FREEZE_INTERVAL = 1000
-    DETERMINISTIC = True
+    DETERMINISTIC = False
 
     LEARN_REPRESENTATION = True
 
@@ -120,8 +120,8 @@ class Defaults:
     DEPTH = 5
     HIGHER_DIM_OBS = True
 
-    # ITERS_PER_UPDATE = 5000    #origin 50000
-    ITERS_PER_UPDATE = 100
+    ITERS_PER_UPDATE = 10000    #origin 50000
+    # ITERS_PER_UPDATE = 100
 
     # For plotting
     OFFLINE_PLOTTING = False
@@ -414,7 +414,7 @@ if __name__ == "__main__":
             knn=knn,
             secondary=True,
             plotter=plotter,
-            # metric_func=calculate_scores_kde
+            metric_func=calculate_scores_kde
         ))
     elif parameters.reward_type == 'hash_count_reward':
         agent.attach(eh.HashCountRewardController(

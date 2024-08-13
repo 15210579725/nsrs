@@ -13,6 +13,8 @@ from nsrl.helper.pytorch import device
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+from . import MI
+from . import CS_ENTROPY    
 
 def mean_squared_error_p_pytorch(y_pred, target=1.0):
     """ Modified mean square error that clips
@@ -299,7 +301,7 @@ class NSRS(LearningAlgo):
 
         return loss_val, abstr_states
 
-    def train_repr(self, nstep_states, nstep_actions, nstep_rewards, nstep_terminals, training=True, scale=1):
+    def train_repr(self, nstep_states, nstep_actions, nstep_rewards, nstep_terminals, training=True, scale=1, renyi = 0):
         """
         Train representations from one batch of data. This should be run multiple steps
         per "training phase". agent.run() should alternate between this and
@@ -312,6 +314,7 @@ class NSRS(LearningAlgo):
         rewards: [self._batch_size]
         nextStates: [batch_size * history size * size of punctual observation (which is 2D,1D or scalar)]).
         terminals: [self._batch_size]
+        renyi: 0 origin, 1 H_x, 2H_xa
 
         Returns
         -------
@@ -329,6 +332,7 @@ class NSRS(LearningAlgo):
 
         nstep_onehot_actions = torch.from_numpy(nstep_onehot_actions)
         onehot_actions = torch.from_numpy(onehot_actions)
+        
 
 
         if isinstance(nstep_states, np.ndarray):
@@ -360,8 +364,16 @@ class NSRS(LearningAlgo):
         losses = {}
         all_loss_vals = torch.tensor(0).to(device).float()
 
-        abstr_state = self.encoder(states)
+        # print("states.shape", states.shape)
+        # print("states", states)
+
+
+        abstr_state = self.encoder(states)  #!encoder出来是nan
         next_abstr_state = self.encoder(next_states)
+
+        # print("action shape", nstep_onehot_actions.shape)
+        # print("abstract state shape", abstr_state.shape)
+        # print("abstract state", abstr_state)
 
         # REWARD LOSS
         if self._train_reward:
@@ -388,14 +400,57 @@ class NSRS(LearningAlgo):
 
         losses['transition_loss'] = loss_val.item()
 
-        # This one is very important
-        # Entropy maximization loss (through exponential) between two random states
-        # this loss is (indirectly) enforcing the radius 1 condition
+        
+        ##################1 test !!!!!!!!!!!!!! nan inf
+        # if not torch.isnan(abstr_state).any() and not torch.isinf(abstr_state).any():
+        #     # H_x = MI.renyi_entropy(torch.tensor(abstr_state, dtype=torch.float32),sigma = 1,alpha = 0.99)
+        #     H_x = MI.renyi_entropy(abstr_state,sigma = 1,alpha = 1.01)
+        #     print("H_x type", H_x.dtype)
+        #     # breakpoint()
+        #     CS_x = CS_ENTROPY.CS_QMI(abstr_state, abstr_state, sigma=1)
+        #     print("H_x", H_x)
+        #     print("CS_x", CS_x)
+        #     # all_loss_vals += -H_x
+        #     # losses['H_x'] = H_x.item()
+        #     all_loss_vals += -CS_x.item()
+        #     losses['CS_x'] = CS_x.item()
+        # else:
+        #     print("abstr_state shape", abstr_state.shape)
+        #     print("abstr_state", abstr_state)
+        #     input("abstr_state nan inf")
+            # action_reshape = onehot_actions.view(onehot_actions.shape[0],-1)
+            # # print("action reshape shape", action_reshape.shape)
+            # xa = torch.cat((abstr_state, action_reshape), dim=1)
+            # # print("xa shape", xa.shape)
+            # H_xa = MI.renyi_entropy(xa, sigma = 1, alpha = 0.8)
+            # losses['H_xa'] = H_xa.item()
+            ###########2
+            # print("abstr_state shape", abstr_state.shape)
+            # print("abstr_state", abstr_state)
+            
+        ##################
+        #Hx
+        if renyi == 1:  #hx
+            H_x = MI.renyi_entropy(abstr_state,sigma = 1,alpha = 1.01)
+            all_loss_vals += -H_x
+            losses['H_x'] = H_x.item()
+        elif renyi == 2:    #h_xa
+            action_reshape = onehot_actions.view(onehot_actions.shape[0],-1)    #shape (64,3)
+            xa = torch.cat((abstr_state, action_reshape), dim=1)    #shape (64,7)
+            H_xa = MI.renyi_entropy(xa, sigma = 1, alpha = 1.01)
+            all_loss_vals += -H_xa
+            losses['H_xa'] = H_xa.item()
+            # plot
+        else:
+            # This one is very important
+            # Entropy maximization loss (through exponential) between two random states
+            # this loss is (indirectly) enforcing the radius 1 condition
 
-        # loss_val = (exp_dec_error_pytorch_2(abstr_state) + exp_dec_error_pytorch_2(next_abstr_state)) / 2
-        loss_val = (lunif(abstr_state) + lunif(next_abstr_state)) / 2
-        all_loss_vals += loss_val
-        losses['two_random_state_entropy_max_loss'] = loss_val.item()
+            # loss_val = (exp_dec_error_pytorch_2(abstr_state) + exp_dec_error_pytorch_2(next_abstr_state)) / 2
+            loss_val = (lunif(abstr_state) + lunif(next_abstr_state)) / 2
+            all_loss_vals += loss_val
+            losses['two_random_state_entropy_max_loss'] = loss_val.item()
+
 
 
         # Entropy maximization loss (through exponential) between two consecutive states

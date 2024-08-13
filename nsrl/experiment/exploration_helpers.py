@@ -268,7 +268,8 @@ class NoveltyRewardController(RewardController):
                                          dist_score=self._score_func,
                                          k=self._k, knn=self._knn, plotter=self._plotter, _count = self._count)
         print("Intrinsic rewards: ", max(intr_rewards), min(intr_rewards), np.mean(intr_rewards))
-        self._plotter.plot("intrinsic_mean_rewards", np.array([self._count]), [np.mean(intr_rewards)], title_name="Intrinsic Rewards")
+        if self._plotter is not None:
+            self._plotter.plot("intrinsic_mean_rewards", np.array([self._count]), [np.mean(intr_rewards)], title_name="Intrinsic Rewards")
         # self._plotter.plot("extrinsic_rewards", np.array([self._count]), np.array([reward]), title_name="Extrinsic Rewards")
         self._count += 1
         # def plot(self, var_name, x, y, title_name="Default Plot",
@@ -309,7 +310,8 @@ class NoveltyRewardController(RewardController):
         # latest_obs_intr_reward = np.clip(latest_obs_intr_reward, -1, 1)
         agent._dataset.updateRewards(latest_obs_intr_reward, agent._dataset.n_elems - 1, secondary=self._secondary)
         print("newest Intrinsic rewards: ", latest_obs_intr_reward)
-        self._plotter.plot("newest intrinsic_mean_rewards", np.array([self._count]), [latest_obs_intr_reward], title_name="newest Intrinsic Rewards")
+        if self._plotter is not None:
+            self._plotter.plot("newest intrinsic_mean_rewards", np.array([self._count]), [latest_obs_intr_reward], title_name="newest Intrinsic Rewards")
 
 class HashStateCounterController(RewardController):
     def __init__(self, plotter, evaluate_on='action', periodicity=1, granularity=32,

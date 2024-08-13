@@ -8,6 +8,8 @@ from nsrl.helper.pytorch import device, calculate_large_batch
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
+from nsrl.learning_algos.space_cover import compute_space_coverage
+import os
 
 
 def calculate_unpredictability_estimate(states, target_network, predictor_network):
@@ -43,8 +45,8 @@ def calculate_scores(states, memory, encoder=None, k=10, dist_score=ranked_avg_k
     Scores of size [batch_size]
     """
     # don't calculate gradients here!
-    print("states shape: ", states.shape)
-    print("memory shape: ", memory.shape)
+    # print("states shape: ", states.shape)
+    # print("memory shape: ", memory.shape)
 
 
     with torch.no_grad():
@@ -63,7 +65,7 @@ def calculate_scores(states, memory, encoder=None, k=10, dist_score=ranked_avg_k
         scores = dist_score(encoded_states.cpu().detach().numpy(),
                             encoded_memory.cpu().detach().numpy(), k=k,
                             knn=knn)
-        if encoded_states.shape[0] != 1:
+        if encoded_states.shape[0] != 1 and plotter:
             print("encoded_states shape: ", encoded_states.shape)
             plotter.plot("newest knn scores", np.array([_count]), np.array([scores[-1]]), "newest knn scores")
             plotter.plot("knn scores 0", np.array([_count]), np.array([scores[0]]), "knn scores 0")
@@ -121,8 +123,31 @@ def calculate_scores_kde(states, memory, encoder=None, band_witdth=None, k=10, d
         #calculate kde
         reshape_states = reshape_data(encoded_states.cpu().detach().numpy())
         reshape_memory = reshape_data(encoded_memory.cpu().detach().numpy())
+
+        # 保存数组到文件中
+        if _count:
+            save_dir = './encode states/'
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+            file_name = f'step_{_count}.npy'
+            file_path = os.path.join(save_dir, file_name)
+            np.save(file_path, reshape_memory.T)
+            print("Saved array to file:", file_path)
+
+        # 从文件中加载数组
+        # loaded_array = np.load('array.npy')
         # print("reshape_states", reshape_states)
         # print("reshape_memory", reshape_memory)
+        # max_values = np.max(reshape_memory, axis=1)
+        # min_values = np.min(reshape_memory, axis=1)
+        # mean_values = np.mean(reshape_memory, axis=1)
+        # print("max_values", max_values)
+        # print("min_values", min_values)
+        # print("mean_values", mean_values)
+
+        coverage = compute_space_coverage(reshape_memory.T,  0.2)
+        print("coverage", coverage * 100.0, "%")
+
         # print("reshape_states.shape", reshape_states.shape)
         # print("reshape_memory.shape", reshape_memory.shape)
 
@@ -132,27 +157,43 @@ def calculate_scores_kde(states, memory, encoder=None, band_witdth=None, k=10, d
 
         scores = 1 / result
         log_scores = np.log(scores)
-        print("result", result)
+        # print("result", result)
         # print("scores", scores)
         # print("log scores", log_scores)
         # self._plotter.plot("intrinsic_mean_rewards", np.array([self._count]), [np.mean(intr_rewards)], title_name="Intrinsic Rewards")
-        plotter.plot("result0", np.array([_count]), np.array([result[0]]), title_name="result0")
-        plotter.plot("density newest", np.array([_count]), np.array([result[-1]]), title_name="density newest")
+        if plotter:
+            plotter.plot("result0", np.array([_count]), np.array([result[0]]), title_name="result0")
+            plotter.plot("density newest", np.array([_count]), np.array([result[-1]]), title_name="density newest")
+            plotter.plot("coverage", np.array([_count]), np.array([coverage]), title_name="coverage")
 
     return log_scores
 
+
+
 if __name__ == '__main__':
-    batch_size = [5,1]
-    query_size = [3, 1]
-    data_dim = [2]
+    # batch_size = [5,1]
+    # query_size = [3, 1]
+    # data_dim = [2]
     
-    # data = np.array([[0,0], [1,1], [1,-1],[-1,1],[-1,-1]])
-    # query = np.array([[-1, 0], [0, 1], [-2, -1]])
-    data = np.random.rand(13,4,3,3)
-    query = np.random.rand(4,4,3,3)
+    # # data = np.array([[0,0], [1,1], [1,-1],[-1,1],[-1,-1]])
+    # # query = np.array([[-1, 0], [0, 1], [-2, -1]])
+    # data = np.random.rand(13,4,3,3)
+    # query = np.random.rand(4,4,3,3)
     
     
     
-    data = torch.tensor(data).to('cuda')
-    query = torch.tensor(query).to('cuda')
-    calculate_scores_kde(query, data, encoder=None, band_witdth=None)
+    # data = torch.tensor(data).to('cuda')
+    # query = torch.tensor(query).to('cuda')
+    # calculate_scores_kde(query, data, encoder=None, band_witdth=None)
+
+    # 创建一个NumPy数组
+    array = np.array([1, 2, 3, 4, 5])
+
+    # 保存数组到文件中
+    np.save('array.npy', array)
+
+    # 从文件中加载数组
+    loaded_array = np.load('array.npy')
+
+    # 打印加载的数组
+    print(loaded_array)
