@@ -25,7 +25,7 @@ def calculate_gram_mat(x, sigma):
     dist= -2*torch.mm(x,x.t()) + instances_norm + instances_norm.t()
     return torch.exp(-dist /sigma)
 
-def renyi_entropy(x,sigma,alpha = 1):
+def renyi_entropy(x,sigma,alpha = 1.01):
     
     """calculate entropy for single variables x (Eq.(9) in paper)
         Args:

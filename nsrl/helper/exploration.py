@@ -30,7 +30,7 @@ def calculate_unpredictability_estimate(states, target_network, predictor_networ
 
 
 def calculate_scores(states, memory, encoder=None, k=10, dist_score=ranked_avg_knn_scores,
-                     knn=batch_count_scaled_knn, plotter=None, _count = None):
+                     knn=batch_count_scaled_knn, plotter=None, _count = None, experiment_dir = None):
     """
     Calculating KNN scores for each of the states. We want to
     optionally encode ALL the states in the buffer to calculate things.
@@ -82,7 +82,7 @@ def reshape_data(data:np.array):
     return data.T
 
 def calculate_scores_kde(states, memory, encoder=None, band_witdth=None, k=10, dist_score=ranked_avg_knn_scores,
-                     knn=batch_count_scaled_knn, plotter = None, _count = None):    #后三个参数保持接口一致，位置参数是必须传这个参数，关键字是可以调换参数，也可以没有，必须在后面
+                     knn=batch_count_scaled_knn, plotter = None, _count = None, experiment_dir = None):    #后三个参数保持接口一致，位置参数是必须传这个参数，关键字是可以调换参数，也可以没有，必须在后面
     """
     Calculating KDE scores for each of the states. 
     We want to
@@ -125,12 +125,12 @@ def calculate_scores_kde(states, memory, encoder=None, band_witdth=None, k=10, d
         reshape_memory = reshape_data(encoded_memory.cpu().detach().numpy())
 
         # 保存数组到文件中
-        if _count:
-            save_dir = './encode states/'
-            if not os.path.exists(save_dir):
-                os.makedirs(save_dir)
+        if (experiment_dir is not None):
+            states_save_path = os.path.join(experiment_dir, "encode states")
+            if not os.path.exists(states_save_path):
+                os.makedirs(states_save_path)
             file_name = f'step_{_count}.npy'
-            file_path = os.path.join(save_dir, file_name)
+            file_path = os.path.join(states_save_path, file_name)
             np.save(file_path, reshape_memory.T)
             print("Saved array to file:", file_path)
 

@@ -72,10 +72,17 @@ if __name__ == "__main__":
     # 生成示例数据，替换为你的数据
     num = 1000
     dim = 4
-    data = np.random.rand(num, dim)  # 替换为实际数据
+    # data = np.random.rand(num, dim)  # 替换为实际数据
+    data = np.load('/home/user/Desktop/nsrs/encode states/step_539.npy')
+    
+    #cut data to [N, 2]
+    # data = data[:][:2]
+    print("size", data.shape)
+    data = data[:, :2]
+    print("size", data.shape)
 
     # 创建UMAP对象
-    reducer = umap.UMAP(n_neighbors=15)
+    reducer = umap.UMAP(n_neighbors=50)
 
     # 执行降维
     embedding = reducer.fit_transform(data)

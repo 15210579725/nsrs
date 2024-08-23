@@ -99,7 +99,7 @@ class Defaults:
     # START_COUNT = 500
     START_COUNT = 0
     # EXPERIMENT_DIR = os.path.join(os.getcwd(), 'experiments', 'pendulum novelty_reward_with_d_step_q_planning_2019-09-17 19-44-30_2905625')
-    EXPERIMENT_DIR = None
+    EXPERIMENT_DIR = "/home/user/Desktop/nsrs/examples/gym/experiments/acrobot--novelty_reward_with_d_step_q_planning_2024-08-14--01-24-15_0"
 
     XTRA = ''
     # ----------------------
@@ -120,7 +120,7 @@ class Defaults:
     DEPTH = 5
     HIGHER_DIM_OBS = True
 
-    ITERS_PER_UPDATE = 10000    #origin 50000
+    ITERS_PER_UPDATE = 1    #origin 50000
     # ITERS_PER_UPDATE = 100
 
     # For plotting
@@ -213,6 +213,7 @@ if __name__ == "__main__":
         from nsrl.helper.data import Bunch
 
         print("Resuming training from directory %s" % parameters.experiment_dir)
+        print("*********************************************")
         param_fname = os.path.join(parameters.experiment_dir, "parameters.json")
         with open(param_fname, 'r') as f:
             new_parameters = json.load(f)
@@ -414,7 +415,8 @@ if __name__ == "__main__":
             knn=knn,
             secondary=True,
             plotter=plotter,
-            metric_func=calculate_scores_kde
+            metric_func=calculate_scores_kde,
+            experiment_dir=experiment_dir,
         ))
     elif parameters.reward_type == 'hash_count_reward':
         agent.attach(eh.HashCountRewardController(

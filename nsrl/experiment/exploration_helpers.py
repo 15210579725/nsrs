@@ -245,7 +245,7 @@ class NoveltyRewardController(RewardController):
     def __init__(self, evaluate_on='train_loop', periodicity=1,
                  metric_func=calculate_scores,
                  score_func=ranked_avg_knn_scores, k=10, knn=batch_count_scaled_knn,
-                 secondary=False, plotter=None):
+                 secondary=False, plotter=None, experiment_dir = None):
         super(NoveltyRewardController, self).__init__(evaluate_on=evaluate_on, periodicity=periodicity)
 
         self._metric_func = metric_func
@@ -255,7 +255,7 @@ class NoveltyRewardController(RewardController):
         self._secondary = secondary
         self._plotter = plotter
         self._count = 0
-
+        self._experiment_dir = experiment_dir
     def _update(self, agent):
         # Now we have to calculate intrinsic rewards
         for m in agent._learning_algo.all_models: m.eval()
@@ -266,7 +266,8 @@ class NoveltyRewardController(RewardController):
                                          all_prev_state,
                                          agent._learning_algo.encoder,
                                          dist_score=self._score_func,
-                                         k=self._k, knn=self._knn, plotter=self._plotter, _count = self._count)
+                                         k=self._k, knn=self._knn, plotter=self._plotter, _count = self._count,
+                                         experiment_dir=self._experiment_dir)
         print("Intrinsic rewards: ", max(intr_rewards), min(intr_rewards), np.mean(intr_rewards))
         if self._plotter is not None:
             self._plotter.plot("intrinsic_mean_rewards", np.array([self._count]), [np.mean(intr_rewards)], title_name="Intrinsic Rewards")
@@ -306,7 +307,8 @@ class NoveltyRewardController(RewardController):
                                                   all_prev_state,
                                                   agent._learning_algo.encoder,
                                                   dist_score=self._score_func,
-                                                  k=self._k, knn=self._knn, plotter = self._plotter, _count = self._count)
+                                                  k=self._k, knn=self._knn, plotter = self._plotter, _count = self._count,
+                                                  experiment_dir=self._experiment_dir)
         # latest_obs_intr_reward = np.clip(latest_obs_intr_reward, -1, 1)
         agent._dataset.updateRewards(latest_obs_intr_reward, agent._dataset.n_elems - 1, secondary=self._secondary)
         print("newest Intrinsic rewards: ", latest_obs_intr_reward)

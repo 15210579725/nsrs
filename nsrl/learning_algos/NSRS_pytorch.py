@@ -301,7 +301,7 @@ class NSRS(LearningAlgo):
 
         return loss_val, abstr_states
 
-    def train_repr(self, nstep_states, nstep_actions, nstep_rewards, nstep_terminals, training=True, scale=1, renyi = 0):
+    def train_repr(self, nstep_states, nstep_actions, nstep_rewards, nstep_terminals, training=True, scale=1, renyi = 2):
         """
         Train representations from one batch of data. This should be run multiple steps
         per "training phase". agent.run() should alternate between this and
@@ -430,14 +430,14 @@ class NSRS(LearningAlgo):
             
         ##################
         #Hx
-        if renyi == 1:  #hx
-            H_x = MI.renyi_entropy(abstr_state,sigma = 1,alpha = 1.01)
+        if renyi == 1:  #hx sigma = 0.5
+            H_x = MI.renyi_entropy(abstr_state,sigma = 0.5,alpha = 1.01)
             all_loss_vals += -H_x
             losses['H_x'] = H_x.item()
         elif renyi == 2:    #h_xa
             action_reshape = onehot_actions.view(onehot_actions.shape[0],-1)    #shape (64,3)
             xa = torch.cat((abstr_state, action_reshape), dim=1)    #shape (64,7)
-            H_xa = MI.renyi_entropy(xa, sigma = 1, alpha = 1.01)
+            H_xa = MI.renyi_entropy(xa, sigma = 0.5, alpha = 1.01)
             all_loss_vals += -H_xa
             losses['H_xa'] = H_xa.item()
             # plot
