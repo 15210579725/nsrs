@@ -248,6 +248,7 @@ if __name__ == "__main__":
 
     experiment_dir = os.path.join(root_save_path, h)
     print("Experiment directory: %s" % experiment_dir)
+    parameters.save_dir = experiment_dir
 
     try:
         os.makedirs(experiment_dir)

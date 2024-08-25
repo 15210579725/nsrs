@@ -15,6 +15,7 @@ from nsrl.experiment import base_controllers as controllers
 from nsrl.policies import EpsilonGreedyPolicy
 from nsrl.helper.data import DataSet, SliceError, CircularBuffer
 import matplotlib.pyplot as plt
+import os
 
 class NeuralAgent(object):
     """The NeuralAgent class wraps a learning algorithm (such as a deep Q-network) for training and testing in a given environment.
@@ -59,7 +60,8 @@ class NeuralAgent(object):
                  reset_dataset_per_epoch=False,
                  network_fname=None, dataset_fname=None,
                  secondary_rewards=False, dataset=None,
-                 reload=False, **kwargs):
+                 reload=False, 
+                 **kwargs,):
         inputDims = environment.inputDimensions()
 
 
@@ -68,6 +70,11 @@ class NeuralAgent(object):
         elif replay_start_size < max(inputDims[i][0] for i in range(len(inputDims))) :
             raise AgentError("Replay_start_size should be greater than the biggest history of a state.")
         
+        if 'save_dir' in kwargs:
+            self.experiment_dir = kwargs.pop('save_dir')
+        else:
+            self.experiment_dir = None
+
         self._controllers = []
         self._environment = environment
         self._learning_algo = learning_algo
@@ -407,6 +414,7 @@ class NeuralAgent(object):
         is_terminal=False
         reward=0
         j = 0
+        all_action = []
         # Set preset actions here
         plt.ion()
         while maxSteps > 0: #3000
@@ -438,6 +446,16 @@ class NeuralAgent(object):
 
 
                 V, action, reward, add_steps = self._step(action=action) ###从策略中采样走一步，V是预期能拿到的回报
+                all_action.append(action)
+                print("action: ", action)
+                if (self.experiment_dir is not None):
+                    action_save_path = os.path.join(self.experiment_dir, "action states")
+                    if not os.path.exists(action_save_path):
+                        os.makedirs(action_save_path)
+                    file_name = f'all_action.npy'
+                    file_path = os.path.join(action_save_path, file_name)
+                    np.save(file_path, all_action)
+                    # print("Saved array to file:", file_path)
                 maxSteps -= add_steps
 
                 self._Vs_on_last_episode.append(V)

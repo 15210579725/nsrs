@@ -301,7 +301,7 @@ class NSRS(LearningAlgo):
 
         return loss_val, abstr_states
 
-    def train_repr(self, nstep_states, nstep_actions, nstep_rewards, nstep_terminals, training=True, scale=1, renyi = 2):
+    def train_repr(self, nstep_states, nstep_actions, nstep_rewards, nstep_terminals, training=True, scale=1, renyi = -1):
         """
         Train representations from one batch of data. This should be run multiple steps
         per "training phase". agent.run() should alternate between this and
@@ -314,7 +314,7 @@ class NSRS(LearningAlgo):
         rewards: [self._batch_size]
         nextStates: [batch_size * history size * size of punctual observation (which is 2D,1D or scalar)]).
         terminals: [self._batch_size]
-        renyi: 0 origin, 1 H_x, 2H_xa
+        renyi: -1 origin+action,0 origin, 1 H_x, 2H_xa, 
 
         Returns
         -------
@@ -441,6 +441,14 @@ class NSRS(LearningAlgo):
             all_loss_vals += -H_xa
             losses['H_xa'] = H_xa.item()
             # plot
+        elif renyi == -1:
+
+            # loss_val = (exp_dec_error_pytorch_2(abstr_state) + exp_dec_error_pytorch_2(next_abstr_state)) / 2
+            action_reshape = onehot_actions.view(onehot_actions.shape[0],-1)    #shape (64,3)
+            xa = torch.cat((abstr_state, action_reshape), dim=1)    #shape (64,7)
+            loss_val = lunif(xa)
+            all_loss_vals += loss_val
+            losses['two_random_state_entropy_max_loss'] = loss_val.item()
         else:
             # This one is very important
             # Entropy maximization loss (through exponential) between two random states
