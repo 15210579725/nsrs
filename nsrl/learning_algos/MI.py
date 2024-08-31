@@ -25,7 +25,7 @@ def calculate_gram_mat(x, sigma):
     dist= -2*torch.mm(x,x.t()) + instances_norm + instances_norm.t()
     return torch.exp(-dist /sigma)
 
-def renyi_entropy(x,sigma,alpha = 1.01):
+def renyi_entropy(x,sigma,alpha):
     
     """calculate entropy for single variables x (Eq.(9) in paper)
         Args:
@@ -73,12 +73,13 @@ def joint_entropy(x,y,s_x,s_y,alpha):
     y = calculate_gram_mat(y,s_y)
     k = torch.mul(x,y)
     k = k/torch.trace(k)
-    eigv = torch.abs(torch.symeig(k, eigenvectors=True)[0])
+    # eigv = torch.abs(torch.symeig(k, eigenvectors=True)[0])
+    eigv = torch.abs(torch.linalg.eigvalsh(k)) #new version eigen value
     eig_pow =  eigv**alpha
     entropy = (1/(1-alpha))*torch.log2(torch.sum(eig_pow))
     return entropy
 
-def calculate_MI(x,y,s_x,s_y,normalize):
+def calculate_MI(x,y,s_x,s_y,alpha, normalize,):
     
     """calculate Mutual information between random variables x and y
 
@@ -92,9 +93,9 @@ def calculate_MI(x,y,s_x,s_y,normalize):
         Mutual information between x and y (scale)
 
     """
-    Hx = renyi_entropy(x,sigma=s_x)
-    Hy = renyi_entropy(y,sigma=s_y)
-    Hxy = joint_entropy(x,y,s_x,s_y)
+    Hx = renyi_entropy(x,sigma=s_x, alpha=alpha)
+    Hy = renyi_entropy(y,sigma=s_y, alpha=alpha)
+    Hxy = joint_entropy(x,y,s_x,s_y, alpha)
     if normalize:
         Ixy = Hx+Hy-Hxy
         Ixy = Ixy/(torch.max(Hx,Hy))
