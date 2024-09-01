@@ -69,4 +69,7 @@ tornado
 urllib3
 visdom
 websocket-client
+umap
+pandans
+moviepy
 

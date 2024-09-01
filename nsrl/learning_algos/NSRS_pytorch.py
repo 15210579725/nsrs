@@ -487,10 +487,10 @@ class NSRS(LearningAlgo):
 
 
         # We have our transition loss.
-        if renyi != 4:  
-            loss_val, transition_states = self.calc_nstep_transition_loss(abstr_state, nstep_states, nstep_onehot_actions, nstep_terminals)
-            all_loss_vals += loss_val
-            losses['transition_loss'] = loss_val.item()
+         
+        loss_val, transition_states = self.calc_nstep_transition_loss(abstr_state, nstep_states, nstep_onehot_actions, nstep_terminals)
+        all_loss_vals += loss_val
+        losses['transition_loss'] = loss_val.item()
 
         if self._learn_back_representation:
             loss_val, transition_states = self.calc_nstep_back_transition_loss(abstr_state, nstep_states, nstep_onehot_actions, nstep_terminals)
