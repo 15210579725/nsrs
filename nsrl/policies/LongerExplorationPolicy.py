@@ -74,7 +74,8 @@ class LongerExplorationPolicy(Policy):
             actions_list = list(itertools.product(*possible_actions))
             
         sequences_with_replacement = list(itertools.combinations_with_replacement(actions_list, self._l))
-        index_pick = self.random_state.randint(0, len(sequences_with_replacement))
+        # index_pick = self.random_state.randint(0, len(sequences_with_replacement))
+        index_pick = self.random_state.integers(0, len(sequences_with_replacement))
         sequence = list(sequences_with_replacement[index_pick])
         self.random_state.shuffle(sequence)
         

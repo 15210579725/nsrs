@@ -104,7 +104,8 @@ class BootstrapDQNPolicy(EpsilonGreedyPolicy):
         self.head_num = self.learning_algo.Q.n_heads
 
     def sample_head(self):
-        self.idx = np.random.randint(self.head_num)
+        # self.idx = np.random.randint(self.head_num)
+        self.idx = np.random.default_rng().integers(self.head_num)
 
     def bestAction(self, state, mode=None, *args, **kwargs):
         for m in self.learning_algo.all_models: m.eval()
