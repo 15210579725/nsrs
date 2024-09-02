@@ -364,7 +364,7 @@ class NSRS(LearningAlgo):
             transition_inputs = torch.cat((x2, action), dim=-1)
             # prev_abstr_states = abstr_states
             my_abstr_states = self.back_transition(transition_inputs)  #my_prediction
-            breakpoint()
+            # breakpoint()
             
 
             def lalign(x, y, alpha=2):
@@ -626,8 +626,9 @@ class NSRS(LearningAlgo):
             test_abstr_next_state = self.encoder(next_states)
             normalize_losses, transition_loss_ind = self.calc_nstep_transition_loss(
                 test_abstr_state, nstep_states, nstep_onehot_actions, nstep_terminals, validation=True, normalize=True)
-            back_normalize_losses, back_transition_loss_ind = self.calc_nstep_back_transition_loss(
-                test_abstr_state, nstep_states, nstep_onehot_actions, nstep_terminals, validation=True, normalize=True)
+            if self._learn_back_representation:
+                back_normalize_losses, back_transition_loss_ind = self.calc_nstep_back_transition_loss(
+                    test_abstr_state, nstep_states, nstep_onehot_actions, nstep_terminals, validation=True, normalize=True)
             losses['inference_normalized_transition_losses'] = normalize_losses.item()
             random_states_loss_ind = (lunif(test_abstr_state) + lunif(test_abstr_next_state)) / 2
 
