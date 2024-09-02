@@ -120,7 +120,7 @@ class Defaults:
     DEPTH = 5
     HIGHER_DIM_OBS = True
 
-    ITERS_PER_UPDATE = 10000    #origin 50000
+    ITERS_PER_UPDATE = 1    #origin 50000
     # ITERS_PER_UPDATE = 100
 
     # For plotting

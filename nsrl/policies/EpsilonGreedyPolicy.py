@@ -15,7 +15,8 @@ class EpsilonGreedyPolicy(Policy):
         self._epsilon = epsilon
 
     def action(self, state, mode=None, *args, **kwargs):
-        if self.random_state.rand() < self._epsilon:
+        # if self.random_state.rand() < self._epsilon:
+        if self.random_state.random() < self._epsilon:
             action, V = self.randomAction()
         else:
             action, V = self.bestAction(state, mode, *args, **kwargs)

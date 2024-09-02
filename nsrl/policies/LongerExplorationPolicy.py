@@ -33,7 +33,8 @@ class LongerExplorationPolicy(Policy):
             action = self._action_sequence[self._count_down]
             self._count_down -= 1
         else:
-            if self.random_state.rand() < self._epsilon/((1+(self._l-1)*(1-self._epsilon))):
+            # if self.random_state.rand() < self._epsilon/((1+(self._l-1)*(1-self._epsilon))):
+            if self.random_state.random() < self._epsilon/((1+(self._l-1)*(1-self._epsilon))):
                 # Take a random action and build an exploration sequence for the next steps
                 self._count_down = self._l - 1
                 self._action_sequence = self.sampleUniformActionSequence()
