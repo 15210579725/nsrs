@@ -10,10 +10,10 @@ tmux new-session -d -s p1 'env CUDA_VISIBLE_DEVICES=0 numactl --physcpubind=0 xv
 tmux new-session -d -s p2 'env CUDA_VISIBLE_DEVICES=0 numactl --physcpubind=2 xvfb-run -a -s "-screen 0 1400x900x24" python experiments/gym/run_se_control.py'
 
 # 创建第四个 tmux 会话，执行 nvitop
-tmux new-session -d -s nvitop 'nvitop'
+#tmux new-session -d -s nvitop 'nvitop'
 
 # 创建第五个 tmux 会话，执行 htop
-tmux new-session -d -s htop 'htop'
+#tmux new-session -d -s htop 'htop'
 tmux attach -t p1
 #tmux attach -t p2
 
