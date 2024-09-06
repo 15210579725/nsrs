@@ -249,36 +249,36 @@ class NSRS(LearningAlgo):
                 self.optimizer_repr = optim.RMSprop(list(self.encoder.parameters()) + list(self.transition.parameters()) + list(self.R.parameters()),
                                                     lr=self._lr, alpha=self._rho, eps=self._rms_epsilon)
                 
-                if self._learn_back_representation:
-                    q_params = list(self.Q.parameters())
-                    if self._encoder_prop_td:
-                        q_params = list(self.encoder.parameters()) + q_params
-                    self.optimizer_full_Q = optim.RMSprop(q_params,
+            if self._learn_back_representation:
+                q_params = list(self.Q.parameters())
+                if self._encoder_prop_td:
+                    q_params = list(self.encoder.parameters()) + q_params
+                self.optimizer_full_Q = optim.RMSprop(q_params,
+                                                    lr=self._lr, alpha=self._rho, eps=self._rms_epsilon)
+                self.optimizer_diff_Tx_x_ = optim.RMSprop(
+                    list(self.encoder.parameters()) + list(self.transition.parameters()), lr=self._lr, alpha=self._rho,
+                    eps=self._rms_epsilon)  # Different optimizers for each network;
+                
+                self.back_optimizer_diff_Tx_x_ = optim.RMSprop(
+                    list(self.encoder.parameters()) + list(self.back_transition.parameters()), lr=self._lr, alpha=self._rho,
+                    eps=self._rms_epsilon)  # Different optimizers for each network;
+
+
+
+                self.optimizer_full_R = optim.RMSprop(list(self.encoder.parameters()) + list(self.R.parameters()),
+                                                    lr=self._lr, alpha=self._rho,
+                                                    eps=self._rms_epsilon)  # to possibly modify them separately
+                self.optimizer_full_gamma = optim.RMSprop(list(self.encoder.parameters()) + list(self.gamma.parameters()),
                                                         lr=self._lr, alpha=self._rho, eps=self._rms_epsilon)
-                    self.optimizer_diff_Tx_x_ = optim.RMSprop(
-                        list(self.encoder.parameters()) + list(self.transition.parameters()), lr=self._lr, alpha=self._rho,
-                        eps=self._rms_epsilon)  # Different optimizers for each network;
-                    
-                    self.back_optimizer_diff_Tx_x_ = optim.RMSprop(
-                        list(self.encoder.parameters()) + list(self.back_transition.parameters()), lr=self._lr, alpha=self._rho,
-                        eps=self._rms_epsilon)  # Different optimizers for each network;
-    
-
-
-                    self.optimizer_full_R = optim.RMSprop(list(self.encoder.parameters()) + list(self.R.parameters()),
-                                                        lr=self._lr, alpha=self._rho,
-                                                        eps=self._rms_epsilon)  # to possibly modify them separately
-                    self.optimizer_full_gamma = optim.RMSprop(list(self.encoder.parameters()) + list(self.gamma.parameters()),
-                                                            lr=self._lr, alpha=self._rho, eps=self._rms_epsilon)
-                    self.optimizer_encoder = optim.RMSprop(self.encoder.parameters(), lr=self._lr, alpha=self._rho,
-                                                        eps=self._rms_epsilon)
-                    self.optimizer_encoder_diff = optim.RMSprop(self.encoder.parameters(), lr=self._lr, alpha=self._rho,
-                                                                eps=self._rms_epsilon)
-                    self.optimizer_diff_s_s_ = optim.RMSprop(self.encoder.parameters(), lr=self._lr, alpha=self._rho,
+                self.optimizer_encoder = optim.RMSprop(self.encoder.parameters(), lr=self._lr, alpha=self._rho,
+                                                    eps=self._rms_epsilon)
+                self.optimizer_encoder_diff = optim.RMSprop(self.encoder.parameters(), lr=self._lr, alpha=self._rho,
                                                             eps=self._rms_epsilon)
+                self.optimizer_diff_s_s_ = optim.RMSprop(self.encoder.parameters(), lr=self._lr, alpha=self._rho,
+                                                        eps=self._rms_epsilon)
 
-                    self.optimizer_repr = optim.RMSprop(list(self.encoder.parameters()) + list(self.transition.parameters()) + list(self.back_transition.parameters()) + list(self.R.parameters()),
-                                                        lr=self._lr, alpha=self._rho, eps=self._rms_epsilon)
+                self.optimizer_repr = optim.RMSprop(list(self.encoder.parameters()) + list(self.transition.parameters()) + list(self.back_transition.parameters()) + list(self.R.parameters()),
+                                                    lr=self._lr, alpha=self._rho, eps=self._rms_epsilon)
 
             # self.optimizer_force_features=optim.RMSprop(list(self.encoder.parameters()) + list(self.transition.parameters()), lr=self._lr, alpha=self._rho, eps=self._rms_epsilon) # This never gets updated
 
@@ -307,7 +307,7 @@ class NSRS(LearningAlgo):
             # append to abstr states as transition_model inputs
             transition_inputs = torch.cat((abstr_states, action), dim=-1)
             prev_abstr_states = abstr_states
-            abstr_states = self.transition(transition_inputs)
+            abstr_states = self.transition(transition_inputs)   #my prediction
 
             # get our target abstract states at step i + 1
             current_state = nstep_states[:, i + 1:self._obs_per_state + i + 1]
@@ -322,12 +322,11 @@ class NSRS(LearningAlgo):
             # diff = torch.sum(((abstr_states - target_abstr_states) * (1 - nstep_terminals[:, i])).norm(dim=-1).pow(2), dim=-1)
             lv = lalign(abstr_states, target_abstr_states)
             if normalize:
-                state_diff = F.pairwise_distance(prev_abstr_states, abstr_states, p=2.0).detach()
+                state_diff = F.pairwise_distance(prev_abstr_states, abstr_states, p=2.0).detach()   #我预测的和原本的抽象状态的距离
                 lv /= state_diff
-
             if validation:
                 # if we calculate validation values, sum diff over dims of abstract states and square.
-                val_diff = ((abstr_states - target_abstr_states) * (1 - nstep_terminals[:, i])).norm(dim=-1).pow(2)
+                val_diff = ((abstr_states - target_abstr_states) * (1 - nstep_terminals[:, i])).norm(dim=-1).pow(2) #去掉停止的以后，预测的和实际的误差
                 validation_tensors += val_diff
             # loss_val += loss_func(diff, torch.zeros_like(diff))
             loss_val += lv.mean()
@@ -355,10 +354,10 @@ class NSRS(LearningAlgo):
             action = nstep_onehot_actions[:, i]
             
             # get our target abstract states at step i + 1
-            current_state = nstep_states[:, i + 1:self._obs_per_state + i + 1]
+            next_state = nstep_states[:, i + 1:self._obs_per_state + i + 1]
             if self._obs_per_state == 1:
-                current_state = current_state.squeeze(1)
-            x2 = self.encoder(current_state)   #X2
+                next_state = next_state.squeeze(1)
+            x2 = self.encoder(next_state)   #X2
 
             # append to abstr states as transition_model inputs
             transition_inputs = torch.cat((x2, action), dim=-1)
@@ -374,7 +373,7 @@ class NSRS(LearningAlgo):
             # diff = torch.sum(((abstr_states - target_abstr_states) * (1 - nstep_terminals[:, i])).norm(dim=-1).pow(2), dim=-1)
             lv = lalign(abstr_states, my_abstr_states)
             if normalize:
-                state_diff = F.pairwise_distance(prev_abstr_states, abstr_states, p=2.0).detach()
+                state_diff = F.pairwise_distance(x2, my_abstr_states, p=2.0).detach()
                 lv /= state_diff
 
             if validation:

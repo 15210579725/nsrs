@@ -306,6 +306,7 @@ if __name__ == "__main__":
         random_state=rng,
         high_dim_obs=parameters.higher_dim_obs,
         rnd_network=parameters.reward_type == 'rnd',
+        learn_back_representation=True,
         **vars(parameters))
 
     if parameters.action_type == 'q_argmax':

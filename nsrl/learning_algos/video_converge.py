@@ -3,7 +3,7 @@ import re
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 
 # 设置你的视频文件所在的目录
-directory = "/home/user/Desktop/nsrs/examples/gym/experiments/acrobot--novelty_reward_with_d_step_q_planning_2024-08-23--14-15-23_0"
+directory = "C:/Users/15210/Desktop/nsrs测试数据/renyi0_nokde_avg679_stderr211/renyi0_nokde_1009/acrobot--novelty_reward_with_d_step_q_planning_2024-08-23--14-26-35_0"
 
 # 获取目录下所有的mp4文件并按数字顺序排序
 video_files = sorted([f for f in os.listdir(directory) if f.endswith('.mp4')],
