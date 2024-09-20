@@ -426,8 +426,8 @@ class DataSet(object):
         index_lowerBound = minimum_without_terminal - 1
         # We try out an index in the acceptable range of the replay memory
         # REMOVED -1 FROM UPPER BOUND (self.n_elems - 1)
-        index = self._random_state.randint(index_lowerBound, self.n_elems)
-        # index = self._random_state.integers(index_lowerBound, self.n_elems)
+        # index = self._random_state.randint(index_lowerBound, self.n_elems)
+        index = self._random_state.integers(index_lowerBound, self.n_elems)
 
         # Check if slice is valid wrt terminals
         # The selected index may correspond to a terminal transition but not

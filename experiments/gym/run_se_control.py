@@ -202,8 +202,8 @@ if __name__ == "__main__":
 
         rng = np.random.RandomState(seed)
     else:
-        # rng = np.random.default_rng()
-        rng = np.random.RandomState()
+        # rng = np.random.RandomState()
+        rng = np.random.default_rng()
 
     job_id = parameters.job_id
     testing = job_id == str(0)
@@ -307,7 +307,7 @@ if __name__ == "__main__":
         random_state=rng,
         high_dim_obs=parameters.higher_dim_obs,
         rnd_network=parameters.reward_type == 'rnd',
-        learn_back_representation=True,
+        learn_back_representation=False,
         **vars(parameters))
 
     if parameters.action_type == 'q_argmax':
