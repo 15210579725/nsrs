@@ -202,7 +202,8 @@ if __name__ == "__main__":
 
         rng = np.random.RandomState(seed)
     else:
-        rng = np.random.default_rng()
+        # rng = np.random.default_rng()
+        rng = np.random.RandomState()
 
     job_id = parameters.job_id
     testing = job_id == str(0)

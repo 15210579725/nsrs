@@ -22,7 +22,8 @@ class Plotter(object):
 
         self.vis = visdom.Visdom(log_to_filename=log_file,
                                  offline=offline,
-                                 server='http://' + host, port=port)
+                                 server='http://' + host, port=port,
+                                 )
         self.plots = {}
         self.experiment_dir = experiment_dir
 

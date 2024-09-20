@@ -197,12 +197,46 @@ def draw_origin_point():
 
     plt.close(fig)
 
-def draw_origin_point_with_video():
+def find_last_npy_path(main_path):
+    '''查找目录下最后一个npy文件路径'''
+    import os
+    import re
+
+    # 构建encode states子目录的路径
+    encode_states_path = os.path.join(main_path, "encode states")
+
+    # 正则表达式用于匹配step_*.npy格式的文件
+    pattern = re.compile(r'step_(\d+)\.npy')
+
+    # 初始化最大步数和相应的文件名
+    max_step = -1
+    max_step_file = None
+
+    # 遍历encode states子目录中的所有文件
+    for filename in os.listdir(encode_states_path):
+        match = pattern.match(filename)
+        if match:
+            # 提取文件名中的数字部分
+            step_number = int(match.group(1))
+            # 更新最大步数及其文件名
+            if step_number > max_step:
+                max_step = step_number
+                max_step_file = filename
+    
+    return main_path + "/encode states/" + max_step_file
+
+def draw_origin_point_with_video(main_path):
     matplotlib.use('Agg')  # 使用 Agg 后端
+    
+    main_path = main_path.replace("\\", "\ ")
+    data_path = find_last_npy_path(main_path)
+    video_path =  main_path + '/merged_video.mp4'
+    
+    video_stitching(main_path)
+    
 
     # 加载数据
-    data_path = '/home/user/Desktop/nsrs/examples/gym/experiments/acrobot--novelty_reward_with_d_step_q_planning_2024-08-23--14-15-23_0/encode states/step_145.npy'
-    video_path = "/home/user/Desktop/nsrs/examples/gym/experiments/acrobot--novelty_reward_with_d_step_q_planning_2024-08-23--14-15-23_0/" + 'merged_video.mp4'
+    
     data = np.load(data_path)
     # 假设数据的形状是 (num_points, num_dimensions)
     # 截取前两维
@@ -258,20 +292,22 @@ def draw_origin_point_with_video():
             scat.set_offsets(np.c_[x[:frame+1], y[:frame+1]])
             scat.set_color(colors[:frame+1])
             img.set_array(video_clip.get_frame(video_frame_index / len(x) * video_clip.duration))
+        
+        print("frame: ", frame, "/", len(x) - start_frame)
 
     # 创建动画
-    ani = animation.FuncAnimation(fig, update, frames=len(x) - start_frame, interval=200, repeat=False)
+    ani = animation.FuncAnimation(fig, update, frames=len(x) - start_frame, interval=100, repeat=False)
 
     # 保存为mp4
-    ani.save('output_animation_with_video.mp4', writer='ffmpeg')
+    ani.save(main_path + 'original_state_video.mp4', writer='ffmpeg')
 
     plt.close(fig)
 
-def draw_umap_projection_with_video():
+def draw_umap_projection_with_video(file_path):
     matplotlib.use('Agg')  # 使用 Agg 后端
 
     # 加载高维数据
-    data = np.load('/home/user/Desktop/nsrs/examples/gym/experiments/acrobot--novelty_reward_with_d_step_q_planning_2024-08-23--14-15-23_0/encode states/step_145.npy')
+    data = np.load(file_path)
 
     # 使用 UMAP 将数据压缩到二维
     reducer = umap.UMAP(n_neighbors=100)
@@ -355,12 +391,50 @@ def count_frame():
     video.release()
     print("frame_count", frame_count)
 
+def video_stitching(main_path):
+    import os
+    import re
+    from moviepy.editor import VideoFileClip, concatenate_videoclips
+
+    # 设置你的视频文件所在的目录
+    main_path = main_path.replace("\\", "/")
+    
+
+    # 获取目录下所有的mp4文件并按数字顺序排序
+    video_files = sorted([f for f in os.listdir( main_path) if f.endswith('.mp4')],
+                        key=lambda x: int(re.search(r'\d+', x).group()))
+
+    # 输出排序后的视频文件名称
+    print("排序后的视频文件列表:")
+    for video in video_files:
+        print(video)
+        
+    # 加载所有的视频文件
+    clips = [VideoFileClip(os.path.join( main_path, file)) for file in video_files]
+
+    # 将视频合并成一个
+    final_clip = concatenate_videoclips(clips)
+
+    # 导出最终的视频文件
+    output_file = os.path.join( main_path, "merged_video.mp4")
+    final_clip.write_videofile(output_file, codec="libx264")
+
+    print(f"视频合并完成，已保存为: {output_file}")
+
+
 if __name__ == "__main__":
-    # matplotlib.use('TkAgg')
+   
     # make_umap_gif()
     # draw_origin_point()
-    # draw_origin_point_with_video()
-    draw_umap_projection_with_video()
+    
+    #origin point with video
+    # main_path = "C:/Users/15210/Desktop/nsrs测试数据/renyi1_avg271-std44/renyi1_sigma05_alpha101_1141_unfinish/acrobot--novelty_reward_with_d_step_q_planning_2024-08-23--14-14-03_0"
+    main_path = "C:/Users/15210/Desktop/nsrs测试数据/renyi0+kde_avg1636_std668/renyi0_kde_1214/acrobot--novelty_reward_with_d_step_q_planning_2024-09-04--04-00-18_0"
+    draw_origin_point_with_video(main_path)
+    
+    #umap with video
+    # file_path = "C:/Users/15210/Desktop/nsrs测试数据/renyi0+kde/renyi0_kde_2349/acrobot--novelty_reward_with_d_step_q_planning_2024-09-02--08-11-36_0/encode states/step_1523.npy"
+    # draw_umap_projection_with_video(file_path=file_path)
     # count_frame()
 
 

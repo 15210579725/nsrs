@@ -35,8 +35,8 @@ class Policy(object):
         """
         if ( isinstance(self.n_actions,int)):
             # Discrete set of actions [0,nactions[
-            # action = self.random_state.randint(0, self.n_actions)
-            action = self.random_state.integers(0, self.n_actions)
+            action = self.random_state.randint(0, self.n_actions)
+            # action = self.random_state.integers(0, self.n_actions)
         else:
             # Continuous set of actions
             action=[]

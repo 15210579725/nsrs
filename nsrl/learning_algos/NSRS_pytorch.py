@@ -118,7 +118,8 @@ class NSRS(LearningAlgo):
 
         self.gamma = self.learn_and_plan.float_model().to(device)
         self.transition = self.learn_and_plan.transition_model().to(device)
-        self.back_transition = self.learn_and_plan.transition_model().to(device)    #x'a -> x
+        if self._learn_back_representation:
+            self.back_transition = self.learn_and_plan.transition_model().to(device)    #x'a -> x
 
         self.all_models = [self.Q]
         if self._learn_representation:
@@ -167,7 +168,8 @@ class NSRS(LearningAlgo):
         self.R_target = self.learn_and_plan_target.float_model().to(device)
         self.gamma_target = self.learn_and_plan_target.float_model().to(device)
         self.transition_target = self.learn_and_plan_target.transition_model().to(device)
-        self.back_transition_target = self.learn_and_plan_target.transition_model().to(device)
+        if self._learn_back_representation:
+            self.back_transition_target = self.learn_and_plan_target.transition_model().to(device)
 
         self.full_Q_target = self.learn_and_plan_target.full_Q_model
 
@@ -496,34 +498,7 @@ class NSRS(LearningAlgo):
             all_loss_vals += loss_val
             losses['back_transition_loss'] = loss_val.item()
         
-        ##################1 test !!!!!!!!!!!!!! nan inf
-        # if not torch.isnan(abstr_state).any() and not torch.isinf(abstr_state).any():
-        #     # H_x = MI.renyi_entropy(torch.tensor(abstr_state, dtype=torch.float32),sigma = 1,alpha = 0.99)
-        #     H_x = MI.renyi_entropy(abstr_state,sigma = 1,alpha = 1.01)
-        #     print("H_x type", H_x.dtype)
-        #     # breakpoint()
-        #     CS_x = CS_ENTROPY.CS_QMI(abstr_state, abstr_state, sigma=1)
-        #     print("H_x", H_x)
-        #     print("CS_x", CS_x)
-        #     # all_loss_vals += -H_x
-        #     # losses['H_x'] = H_x.item()
-        #     all_loss_vals += -CS_x.item()
-        #     losses['CS_x'] = CS_x.item()
-        # else:
-        #     print("abstr_state shape", abstr_state.shape)
-        #     print("abstr_state", abstr_state)
-        #     input("abstr_state nan inf")
-            # action_reshape = onehot_actions.view(onehot_actions.shape[0],-1)
-            # # print("action reshape shape", action_reshape.shape)
-            # xa = torch.cat((abstr_state, action_reshape), dim=1)
-            # # print("xa shape", xa.shape)
-            # H_xa = MI.renyi_entropy(xa, sigma = 1, alpha = 0.8)
-            # losses['H_xa'] = H_xa.item()
-            ###########2
-            # print("abstr_state shape", abstr_state.shape)
-            # print("abstr_state", abstr_state)
-            
-        ##################
+       
         #Hx
         if renyi == 1:  #hx sigma = 0.5
             H_x = MI.renyi_entropy(abstr_state,sigma = 0.5,alpha = 1.01)
@@ -555,7 +530,7 @@ class NSRS(LearningAlgo):
             loss_val = lunif(xa)
             all_loss_vals += loss_val
             losses['two_random_state_entropy_max_loss'] = loss_val.item()
-        else:
+        elif renyi == 0:
             # This one is very important
             # Entropy maximization loss (through exponential) between two random states
             # this loss is (indirectly) enforcing the radius 1 condition
